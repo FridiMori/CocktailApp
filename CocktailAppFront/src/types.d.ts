@@ -29,11 +29,17 @@ export interface Ingredient{
     amount: string;
 }
 
+export interface Rating {
+    user: User;
+    rating: number;
+}
+
 export interface ApiCocktail {
     _id: string;
     user: string;
     title: string;
     recipe: string;
+    image: File | null;
     isPublic: boolean;
     ingredients: Ingredient[];
 }
@@ -42,6 +48,7 @@ export interface CocktailMutation {
     title: string;
     recipe: string;
     isPublic?: boolean;
+    image: File | null;
     ingredients: Ingredient[];
 }
 
