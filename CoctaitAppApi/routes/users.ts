@@ -9,6 +9,9 @@ import {imagesUpload} from "../multer";
 const usersRouter = express.Router();
 const googleClient = new OAuth2Client(config.google.clientId);
 
+const getDefaultAvatar =()=>{
+    return "defaultAvatar.jpg";
+}
 
 usersRouter.post(
     '/',
@@ -19,7 +22,7 @@ usersRouter.post(
         password: req.body.password,
         email: req.body.email,
         displayName: req.body.displayName,
-        avatar: req.file ? req.file.filename : undefined,
+        avatar: req.file ? req.file.filename : getDefaultAvatar(),
     };
 
     try {
@@ -88,7 +91,7 @@ usersRouter.post('/google', async (req, res, next) => {
                 password: crypto.randomUUID(),
                 googleId: id,
                 displayName,
-                avatar
+                avatar: avatar || getDefaultAvatar(),
             });
         }
 
