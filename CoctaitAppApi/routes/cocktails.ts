@@ -96,6 +96,44 @@ cocktailsRouter.post("/", auth, imagesUpload.single("image"), async (req, res) =
     }
 });
 
+cocktailsRouter.put("/:id", auth, imagesUpload.single("image"), async (req, res) => {
+    const userReq = req as RequestWithUser;
+    try {
+        const cocktail = await Cocktail.findById(req.params.id);
+
+        if (!cocktail) {
+            return res.status(404).send({ error: "Cocktail not found" });
+        }
+
+        if (userReq.user.role !== "admin" &&
+            cocktail.user.toString() !== userReq.user._id.toString()) {
+            return res.status(403).send({ error: "You can only edit your own cocktails" });
+        }
+
+        const { title, recipe, ingredients } = userReq.body;
+
+        cocktail.title = title;
+        cocktail.recipe = recipe;
+        cocktail.ingredients = JSON.parse(ingredients);
+
+        if (userReq.file) {
+            cocktail.image = userReq.file.filename;
+        }
+
+        await cocktail.save();
+
+        const updatedCocktail = await Cocktail.findById(req.params.id)
+            .populate("user", "username displayName avatar");
+
+        res.send(updatedCocktail);
+    } catch (error) {
+        if (error instanceof mongoose.Error.ValidationError) {
+            return res.status(400).send({ error: error.message });
+        }
+        res.sendStatus(500);
+    }
+});
+
 cocktailsRouter.patch("/:id/publish", auth, permit("admin"), async (req, res) => {
     try {
         const cocktail = await Cocktail.findByIdAndUpdate(
